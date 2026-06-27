@@ -1,0 +1,1043 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>2jyymium</title>
+  <style>
+    :root {
+      --chrome-bg: #202124;
+      --chrome-tabbar: #1f1f1f;
+      --chrome-toolbar: #2b2a33;
+      --tab-active: #2b2a33;
+      --tab-inactive: transparent;
+      --tab-hover: rgba(255,255,255,0.08);
+      --input-bg: #1c1b22;
+      --input-border: #42414d;
+      --text: #fbfbfe;
+      --text-muted: #9aa0a6;
+      --icon: #cfcfd8;
+      --accent: #8ab4f8;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+    }
+
+    body, html {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: var(--chrome-bg);
+      color: var(--text);
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ── HEADER ─────────────────────────────────────── */
+    #chrome-header {
+      background: var(--chrome-tabbar);
+      display: flex;
+      flex-direction: column;
+      flex-shrink: 0;
+      z-index: 100;
+    }
+
+    /* ── TAB STRIP ───────────────────────────────────── */
+    #tab-strip {
+      display: flex;
+      align-items: flex-end;
+      padding: 6px 8px 0;
+      height: 38px;
+      gap: 2px;
+    }
+
+    .tabs-container {
+      display: flex;
+      align-items: flex-end;
+      flex: 1;
+      gap: 2px;
+      overflow: hidden;
+    }
+
+    .tab {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      padding: 0 10px 0 12px;
+      height: 32px;
+      background: var(--tab-inactive);
+      border-radius: 8px 8px 0 0;
+      min-width: 80px;
+      max-width: 220px;
+      flex: 1;
+      cursor: pointer;
+      font-size: 12px;
+      color: var(--text-muted);
+      position: relative;
+      overflow: hidden;
+      transition: background 0.2s ease, color 0.2s ease, transform 0.2s cubic-bezier(.34,1.56,.64,1), opacity 0.2s ease;
+      transform-origin: bottom center;
+    }
+
+    .tab.dragging {
+      opacity: 0.5;
+      background: var(--tab-hover);
+    }
+
+    .tab.drag-over {
+      border-left: 2px solid var(--accent);
+    }
+
+    /* Tab giriş animasyonu */
+    .tab.tab-enter {
+      animation: tabOpen 0.25s cubic-bezier(.34,1.56,.64,1) forwards;
+    }
+
+    @keyframes tabOpen {
+      from { transform: scaleY(0.6) translateY(10px); opacity: 0; }
+      to   { transform: scaleY(1) translateY(0);     opacity: 1; }
+    }
+
+    /* Tab çıkış animasyonu */
+    .tab.tab-exit {
+      animation: tabClose 0.18s ease forwards;
+    }
+
+    @keyframes tabClose {
+      from { transform: scaleX(1); opacity: 1; }
+      to   { transform: scaleX(0); opacity: 0; max-width: 0; min-width: 0; padding: 0; }
+    }
+
+    .tab:hover {
+      background: var(--tab-hover);
+      color: var(--text);
+    }
+
+    .tab.active {
+      background: var(--tab-active);
+      color: var(--text);
+      font-weight: 500;
+    }
+
+    /* Aktif sekme altındaki parlayan çizgi */
+    .tab.active::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 10%;
+      right: 10%;
+      height: 2px;
+      background: var(--accent);
+      border-radius: 2px 2px 0 0;
+      animation: tabLineIn 0.3s ease forwards;
+    }
+
+    @keyframes tabLineIn {
+      from { transform: scaleX(0); opacity: 0; }
+      to   { transform: scaleX(1); opacity: 1; }
+    }
+
+    .tab-favicon {
+      width: 15px;
+      height: 15px;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 10px;
+    }
+
+    .tab-favicon img {
+      width: 15px;
+      height: 15px;
+      border-radius: 2px;
+    }
+
+    .tab-title {
+      flex: 1;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      font-size: 12px;
+    }
+
+    .tab-close {
+      width: 16px;
+      height: 16px;
+      flex-shrink: 0;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      color: var(--text-muted);
+      opacity: 0;
+      transition: opacity 0.15s, background 0.15s;
+    }
+
+    .tab:hover .tab-close,
+    .tab.active .tab-close {
+      opacity: 1;
+    }
+
+    .tab-close:hover {
+      background: rgba(255,255,255,0.2);
+      color: #fff;
+    }
+
+    .new-tab-btn {
+      width: 28px;
+      height: 28px;
+      flex-shrink: 0;
+      border-radius: 50%;
+      background: transparent;
+      border: none;
+      color: var(--icon);
+      font-size: 20px;
+      line-height: 1;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 2px;
+      transition: background 0.15s, transform 0.15s;
+    }
+
+    .new-tab-btn:hover {
+      background: rgba(255,255,255,0.1);
+      transform: rotate(90deg);
+    }
+
+    /* ── TOOLBAR ─────────────────────────────────────── */
+    #toolbar {
+      display: flex;
+      align-items: center;
+      padding: 5px 8px 6px;
+      gap: 6px;
+      background: var(--chrome-toolbar);
+      border-bottom: 1px solid rgba(0,0,0,0.25);
+    }
+
+    .nav-btn {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      border: none;
+      background: transparent;
+      color: var(--icon);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.15s, transform 0.15s;
+    }
+
+    .nav-btn svg { width: 16px; height: 16px; fill: currentColor; }
+
+    .nav-btn:hover:not(:disabled) {
+      background: rgba(255,255,255,0.1);
+      transform: scale(1.15);
+    }
+
+    .nav-btn:active:not(:disabled) {
+      transform: scale(0.9);
+    }
+
+    .nav-btn:disabled { opacity: 0.3; cursor: default; }
+
+    /* Loading spinner on reload */
+    .nav-btn.loading svg {
+      animation: spin 0.7s linear infinite;
+    }
+
+    @keyframes spin {
+      from { transform: rotate(0deg); }
+      to   { transform: rotate(360deg); }
+    }
+
+    /* ── OMNIBOX ─────────────────────────────────────── */
+    .omni-box {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      background: var(--input-bg);
+      border: 1px solid var(--input-border);
+      border-radius: 18px;
+      padding: 0 12px;
+      height: 30px;
+      transition: background 0.2s, border-color 0.2s, box-shadow 0.2s;
+    }
+
+    .omni-box:focus-within {
+      background: #17161d;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(138,180,248,0.18);
+    }
+
+    .security-icon {
+      display: flex;
+      align-items: center;
+      margin-right: 8px;
+      color: var(--text-muted);
+    }
+
+    .security-icon svg { width: 13px; height: 13px; fill: currentColor; }
+
+    #address-bar {
+      flex: 1;
+      background: transparent;
+      border: none;
+      outline: none;
+      color: var(--text);
+      font-size: 13px;
+    }
+
+    /* ── VIEWS ───────────────────────────────────────── */
+    #views-container {
+      flex: 1;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .view-wrapper {
+      position: absolute;
+      inset: 0;
+      display: none;
+      opacity: 0;
+    }
+
+    .view-wrapper.active {
+      display: block;
+      animation: viewFadeIn 0.22s ease forwards;
+    }
+
+    .view-wrapper.slide-out {
+      animation: viewFadeOut 0.18s ease forwards;
+    }
+
+    @keyframes viewFadeIn {
+      from { opacity: 0; transform: translateY(6px) scale(0.995); }
+      to   { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    @keyframes viewFadeOut {
+      from { opacity: 1; }
+      to   { opacity: 0; }
+    }
+
+    webview {
+      width: 100%;
+      height: 100%;
+      border: none;
+    }
+
+    /* ── NTP PAGE ────────────────────────────────────── */
+    .ntp-container {
+      width: 100%;
+      height: 100%;
+      background:
+        linear-gradient(160deg, rgba(10,12,20,0.80) 0%, rgba(32,33,36,0.85) 100%),
+        url('image.png') no-repeat center center / cover;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 0;
+      padding-bottom: 60px;
+      overflow: hidden;
+    }
+
+    .ntp-welcome {
+      font-size: 42px;
+      font-weight: 700;
+      color: #fff;
+      letter-spacing: -0.5px;
+      text-shadow: 0 6px 28px rgba(0,0,0,0.7);
+      margin-bottom: 32px;
+      opacity: 0;
+      animation: ntpSlideDown 0.55s cubic-bezier(.16,1,.3,1) 0.05s forwards;
+    }
+
+    .ntp-search-wrap {
+      width: 100%;
+      max-width: 590px;
+      margin-bottom: 36px;
+      opacity: 0;
+      animation: ntpSlideDown 0.55s cubic-bezier(.16,1,.3,1) 0.15s forwards;
+    }
+
+    .ntp-search-box {
+      display: flex;
+      align-items: center;
+      background: rgba(44,45,48,0.88);
+      backdrop-filter: blur(16px);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 28px;
+      padding: 0 20px;
+      height: 50px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+      transition: transform 0.25s cubic-bezier(.16,1,.3,1), box-shadow 0.25s, border-color 0.25s;
+    }
+
+    .ntp-search-box:focus-within {
+      transform: translateY(-3px) scale(1.01);
+      border-color: rgba(138,180,248,0.6);
+      box-shadow: 0 16px 48px rgba(0,0,0,0.5), 0 0 0 1px rgba(138,180,248,0.35);
+    }
+
+    .ntp-search-icon {
+      color: #9aa0a6;
+      margin-right: 14px;
+      display: flex;
+      align-items: center;
+    }
+
+    .ntp-search-icon svg { width: 20px; height: 20px; fill: currentColor; }
+
+    .ntp-input {
+      flex: 1;
+      background: transparent;
+      border: none;
+      outline: none;
+      color: #fff;
+      font-size: 16px;
+    }
+
+    .ntp-shortcuts {
+      display: flex;
+      gap: 14px;
+      opacity: 0;
+      animation: ntpSlideDown 0.55s cubic-bezier(.16,1,.3,1) 0.25s forwards;
+    }
+
+    .shortcut-item {
+      width: 88px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 9px;
+      padding: 14px 0 12px;
+      border-radius: 14px;
+      cursor: pointer;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.07);
+      backdrop-filter: blur(8px);
+      transition: transform 0.25s cubic-bezier(.34,1.56,.64,1), background 0.2s, box-shadow 0.2s, border-color 0.2s;
+    }
+
+    .shortcut-item:hover {
+      transform: translateY(-6px) scale(1.06);
+      background: rgba(255,255,255,0.11);
+      border-color: rgba(138,180,248,0.45);
+      box-shadow: 0 12px 28px rgba(0,0,0,0.35);
+    }
+
+    .shortcut-item:active {
+      transform: translateY(-2px) scale(0.97);
+    }
+
+    .shortcut-icon {
+      width: 46px;
+      height: 46px;
+      border-radius: 50%;
+      background: rgba(44,45,48,0.9);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      box-shadow: 0 4px 14px rgba(0,0,0,0.25);
+    }
+
+    .shortcut-title {
+      font-size: 11.5px;
+      color: #e8eaed;
+      font-weight: 500;
+      text-align: center;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 80px;
+    }
+
+    @keyframes ntpSlideDown {
+      from { opacity: 0; transform: translateY(30px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ── INTERNAL PAGES ──────────────────────────────── */
+    .internal-page {
+      width: 100%;
+      height: 100%;
+      background: #202124;
+      overflow-y: auto;
+      padding: 40px 50px;
+      color: #e8eaed;
+    }
+
+    .internal-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      border-bottom: 1px solid rgba(255,255,255,0.09);
+      padding-bottom: 22px;
+      margin-bottom: 28px;
+    }
+
+    .internal-title {
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--accent);
+    }
+
+    .internal-subtitle {
+      font-size: 13px;
+      color: #9aa0a6;
+      margin-top: 5px;
+    }
+
+    .action-btn {
+      padding: 8px 18px;
+      border-radius: 18px;
+      background: #3c4043;
+      border: 1px solid #5f6368;
+      color: white;
+      font-weight: 600;
+      font-size: 13px;
+      cursor: pointer;
+      transition: background 0.15s, transform 0.15s;
+    }
+
+    .action-btn:hover { background: #4a4e51; transform: scale(1.04); }
+
+    .card {
+      background: #292a2d;
+      border: 1px solid rgba(255,255,255,0.07);
+      border-radius: 12px;
+      padding: 16px 20px;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      animation: cardIn 0.3s ease forwards;
+      opacity: 0;
+      transition: background 0.15s, transform 0.15s;
+    }
+
+    .card:hover { background: #303134; transform: translateX(4px); }
+
+    @keyframes cardIn {
+      from { opacity: 0; transform: translateY(12px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .card-info h3 { font-size: 14.5px; color: #fff; margin-bottom: 4px; }
+    .card-info p  { font-size: 12px; color: #9aa0a6; }
+
+    .card-link {
+      font-size: 14.5px;
+      color: var(--accent);
+      margin-bottom: 4px;
+      cursor: pointer;
+      transition: color 0.15s;
+    }
+
+    .card-link:hover { color: #adc8ff; text-decoration: underline; }
+
+    .badge {
+      padding: 4px 12px;
+      border-radius: 12px;
+      font-size: 11.5px;
+      font-weight: 600;
+    }
+
+    .badge-blue  { background: rgba(138,180,248,0.2); color: var(--accent); }
+    .badge-green { background: rgba(52,168,83,0.2);   color: #34a853; }
+
+    .card-time { font-size: 12px; color: #80868b; white-space: nowrap; margin-left: 16px; }
+  </style>
+</head>
+<body>
+
+<div id="chrome-header">
+  <div id="tab-strip">
+    <div class="tabs-container" id="tabs-wrapper">
+      <button class="new-tab-btn" id="add-tab-btn" title="Yeni sekme">+</button>
+    </div>
+  </div>
+
+  <div id="toolbar">
+    <button class="nav-btn" id="btn-back" disabled title="Geri">
+      <svg viewBox="0 0 24 24"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
+    </button>
+    <button class="nav-btn" id="btn-forward" disabled title="İleri">
+      <svg viewBox="0 0 24 24"><path d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8-8-8z"/></svg>
+    </button>
+    <button class="nav-btn" id="btn-reload" title="Yenile">
+      <svg viewBox="0 0 24 24"><path d="M17.65 6.35A7.958 7.958 0 0 0 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></svg>
+    </button>
+
+    <div class="omni-box">
+      <div class="security-icon">
+        <svg viewBox="0 0 24 24"><path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/></svg>
+      </div>
+      <input type="text" id="address-bar" placeholder="Google üzerinde arayın veya bir URL yazın">
+    </div>
+
+    <button class="nav-btn" id="btn-menu" title="Menü">
+      <svg viewBox="0 0 24 24"><path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/></svg>
+    </button>
+  </div>
+</div>
+
+<div id="views-container"></div>
+
+<!-- TEMPLATES -->
+<template id="ntp-template">
+  <div class="ntp-container">
+    <h1 class="ntp-welcome">2jyymiuma hosgeldin knk 👋</h1>
+
+    <div class="ntp-search-wrap">
+      <div class="ntp-search-box">
+        <div class="ntp-search-icon">
+          <svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+        </div>
+        <input type="text" class="ntp-input" placeholder="Google'da ara veya adres yaz...">
+      </div>
+    </div>
+
+    <div class="ntp-shortcuts">
+      <div class="shortcut-item" data-url="chrome://history">
+        <div class="shortcut-icon">📜</div>
+        <span class="shortcut-title">Geçmiş</span>
+      </div>
+      <div class="shortcut-item" data-url="chrome://flags">
+        <div class="shortcut-icon">⚡</div>
+        <span class="shortcut-title">Flags</span>
+      </div>
+      <div class="shortcut-item" data-url="chrome://extensions">
+        <div class="shortcut-icon">🧩</div>
+        <span class="shortcut-title">Eklentiler</span>
+      </div>
+      <div class="shortcut-item" data-url="https://chromewebstore.google.com">
+        <div class="shortcut-icon">🛍️</div>
+        <span class="shortcut-title">Web Mağazası</span>
+      </div>
+      <div class="shortcut-item" data-url="https://www.google.com">
+        <div class="shortcut-icon">🌐</div>
+        <span class="shortcut-title">Google</span>
+      </div>
+      <div class="shortcut-item" data-url="https://www.youtube.com">
+        <div class="shortcut-icon">▶️</div>
+        <span class="shortcut-title">YouTube</span>
+      </div>
+      <div class="shortcut-item" data-url="https://github.com">
+        <div class="shortcut-icon">💻</div>
+        <span class="shortcut-title">GitHub</span>
+      </div>
+    </div>
+  </div>
+</template>
+
+<template id="flags-template">
+  <div style="width:100%;height:100%;background:#0d0f14;">
+    <webview src="flags.html" style="width:100%;height:100%;border:none;" allowpopups="true" autosize="on"></webview>
+  </div>
+</template>
+
+<template id="extensions-template">
+  <div style="width:100%;height:100%;background:#0d0f14;">
+    <webview src="extensions.html" style="width:100%;height:100%;border:none;" allowpopups="true" autosize="on" preload="./preload.js"></webview>
+  </div>
+</template>
+
+<template id="history-template">
+  <div class="internal-page">
+    <div class="internal-header">
+      <div>
+        <div class="internal-title">📜 Tarama Geçmişi</div>
+        <div class="internal-subtitle" id="history-count"></div>
+      </div>
+      <button class="action-btn" id="clear-history-btn">Geçmişi Temizle</button>
+    </div>
+    <div id="history-list"></div>
+  </div>
+</template>
+
+<script>
+class ChromiumApp {
+  constructor() {
+    this.tabs = [];
+    this.activeTabId = null;
+    this.history = JSON.parse(localStorage.getItem('2jyymium_history') || '[]');
+
+    this.tabsWrapper  = document.getElementById('tabs-wrapper');
+    this.addTabBtn    = document.getElementById('add-tab-btn');
+    this.viewsCont    = document.getElementById('views-container');
+    this.addressBar   = document.getElementById('address-bar');
+
+    this.ntpTemplate        = document.getElementById('ntp-template');
+    this.flagsTemplate      = document.getElementById('flags-template');
+    this.historyTemplate    = document.getElementById('history-template');
+    this.extensionsTemplate = document.getElementById('extensions-template');
+
+    this.initControls();
+    this.createTab(); // açılış sekmesi: özel NTP
+  }
+
+  /* ────────────── CONTROLS ────────────── */
+  initControls() {
+    this.addTabBtn.addEventListener('click', () => this.createTab());
+
+    document.getElementById('btn-back').addEventListener('click', () => {
+      const t = this.getActive();
+      if (t?.webview?.canGoBack()) t.webview.goBack();
+    });
+    document.getElementById('btn-forward').addEventListener('click', () => {
+      const t = this.getActive();
+      if (t?.webview?.canGoForward()) t.webview.goForward();
+    });
+    document.getElementById('btn-reload').addEventListener('click', () => {
+      const t = this.getActive();
+      if (t?.webview) t.webview.reload();
+    });
+    document.getElementById('btn-menu').addEventListener('click', () => {
+      this.navigate('chrome://flags');
+    });
+
+    window.addEventListener('keydown', (e) => {
+      if (e.ctrlKey) {
+        if (e.key === 't') { e.preventDefault(); this.createTab(); }
+        if (e.key === 'w') { e.preventDefault(); if (this.activeTabId) this.closeTab(this.activeTabId); }
+        if (e.key === 'h') { e.preventDefault(); this.navigate('chrome://history'); }
+      }
+    });
+
+    this.addressBar.addEventListener('keypress', (e) => {
+      if (e.key !== 'Enter') return;
+      this.navigate(this.resolveInput(this.addressBar.value.trim()));
+    });
+  }
+
+  resolveInput(val) {
+    if (!val) return null;
+    if (val === 'chrome://flags' || val === '2jyymium://flags') return 'chrome://flags';
+    if (val === 'chrome://history' || val === '2jyymium://history') return 'chrome://history';
+    if (val === 'chrome://extensions' || val === '2jyymium://extensions') return 'chrome://extensions';
+    if (val.startsWith('http://') || val.startsWith('https://')) return val;
+    if (val.includes('.') && !val.includes(' ')) return 'https://' + val;
+    return 'https://www.google.com/search?q=' + encodeURIComponent(val);
+  }
+
+  /* ────────────── TAB CREATION ────────────── */
+  createTab(url = null) {
+    const id = 'tab_' + Date.now();
+
+    /* Tab button */
+    const tabEl = document.createElement('div');
+    tabEl.className = 'tab tab-enter';
+    tabEl.dataset.id = id;
+    tabEl.draggable = true;
+    tabEl.innerHTML = `
+      <div class="tab-favicon">🌐</div>
+      <span class="tab-title">${url ? 'Yükleniyor...' : 'Yeni Sekme'}</span>
+      <span class="tab-close">&times;</span>
+    `;
+    tabEl.addEventListener('click', (e) => {
+      if (e.target.classList.contains('tab-close')) { e.stopPropagation(); this.closeTab(id); }
+      else this.switchTab(id);
+    });
+    tabEl.addEventListener('animationend', () => tabEl.classList.remove('tab-enter'));
+
+    // Drag and Drop Logic
+    tabEl.addEventListener('dragstart', (e) => {
+      e.dataTransfer.effectAllowed = 'move';
+      tabEl.classList.add('dragging');
+    });
+    tabEl.addEventListener('dragend', () => {
+      tabEl.classList.remove('dragging');
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('drag-over'));
+      // Update this.tabs array order to match DOM
+      const domIds = Array.from(this.tabsWrapper.querySelectorAll('.tab')).map(t => t.dataset.id);
+      this.tabs.sort((a, b) => domIds.indexOf(a.id) - domIds.indexOf(b.id));
+    });
+    tabEl.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      e.dataTransfer.dropEffect = 'move';
+      const dragging = this.tabsWrapper.querySelector('.dragging');
+      if (dragging && dragging !== tabEl) {
+        tabEl.classList.add('drag-over');
+      }
+    });
+    tabEl.addEventListener('dragleave', () => {
+      tabEl.classList.remove('drag-over');
+    });
+    tabEl.addEventListener('drop', (e) => {
+      e.preventDefault();
+      tabEl.classList.remove('drag-over');
+      const dragging = this.tabsWrapper.querySelector('.dragging');
+      if (dragging && dragging !== tabEl) {
+        const allTabs = Array.from(this.tabsWrapper.querySelectorAll('.tab'));
+        const dragIndex = allTabs.indexOf(dragging);
+        const dropIndex = allTabs.indexOf(tabEl);
+        if (dragIndex < dropIndex) {
+          tabEl.after(dragging);
+        } else {
+          tabEl.before(dragging);
+        }
+      }
+    });
+
+    this.tabsWrapper.insertBefore(tabEl, this.addTabBtn);
+
+    /* View wrapper */
+    const viewWrapper = document.createElement('div');
+    viewWrapper.className = 'view-wrapper';
+    viewWrapper.dataset.id = id;
+    this.viewsCont.appendChild(viewWrapper);
+
+    const obj = { id, tabEl, viewWrapper, webview: null, isCustom: true, url: url || 'about:blank', title: 'Yeni Sekme' };
+    this.tabs.push(obj);
+
+    if (url === 'chrome://flags')   this.attachFlags(obj);
+    else if (url === 'chrome://history') this.attachHistory(obj);
+    else if (url === 'chrome://extensions') this.attachExtensions(obj);
+    else if (url)                   this.attachWebview(obj, url);
+    else                            this.attachNTP(obj);
+
+    this.switchTab(id);
+  }
+
+  /* ────────────── ATTACH ────────────── */
+  attachWebview(obj, url) {
+    obj.isCustom = false;
+    obj.viewWrapper.innerHTML = '';
+    const wv = document.createElement('webview');
+    wv.setAttribute('autosize', 'on');
+    wv.setAttribute('allowpopups', 'true');
+    obj.viewWrapper.appendChild(wv);
+    obj.webview = wv;
+
+    const reloadBtn = document.getElementById('btn-reload');
+
+    wv.addEventListener('did-start-loading', () => {
+      reloadBtn.classList.add('loading');
+    });
+    wv.addEventListener('did-stop-loading', () => {
+      reloadBtn.classList.remove('loading');
+      this.updateNav();
+    });
+    wv.addEventListener('did-navigate', (e) => {
+      obj.url = e.url;
+      if (this.activeTabId === obj.id) { this.addressBar.value = e.url; this.updateNav(); }
+      this.pushHistory(obj.title, e.url);
+    });
+    wv.addEventListener('did-navigate-in-page', (e) => {
+      obj.url = e.url;
+      if (this.activeTabId === obj.id) this.addressBar.value = e.url;
+    });
+    wv.addEventListener('page-title-updated', (e) => {
+      obj.title = e.title;
+      obj.tabEl.querySelector('.tab-title').textContent = e.title;
+      this.pushHistory(e.title, obj.url);
+    });
+    wv.addEventListener('page-favicon-updated', (e) => {
+      if (e.favicons?.length) {
+        const img = document.createElement('img');
+        img.src = e.favicons[0];
+        img.onerror = () => { obj.tabEl.querySelector('.tab-favicon').textContent = '🌐'; };
+        obj.tabEl.querySelector('.tab-favicon').innerHTML = '';
+        obj.tabEl.querySelector('.tab-favicon').appendChild(img);
+      }
+    });
+
+    wv.src = url;
+  }
+
+  attachNTP(obj) {
+    obj.isCustom = true;
+    obj.webview = null;
+    obj.url = 'about:blank';
+    obj.title = 'Yeni Sekme';
+    obj.tabEl.querySelector('.tab-title').textContent = 'Yeni Sekme';
+    obj.viewWrapper.innerHTML = '';
+
+    const clone = this.ntpTemplate.content.cloneNode(true);
+    const c = clone.querySelector('.ntp-container');
+    const input = c.querySelector('.ntp-input');
+    input.addEventListener('keypress', (e) => {
+      if (e.key !== 'Enter') return;
+      const url = this.resolveInput(input.value.trim());
+      if (!url) return;
+      if (url === 'chrome://flags') { this.attachFlags(obj); return; }
+      if (url === 'chrome://history') { this.attachHistory(obj); return; }
+      if (url === 'chrome://extensions') { this.attachExtensions(obj); return; }
+      this.attachWebview(obj, url);
+    });
+    c.querySelectorAll('.shortcut-item').forEach(item => {
+      item.addEventListener('click', () => {
+        const u = item.dataset.url;
+        if (u === 'chrome://flags') { this.attachFlags(obj); return; }
+        if (u === 'chrome://history') { this.attachHistory(obj); return; }
+        if (u === 'chrome://extensions') { this.attachExtensions(obj); return; }
+        this.attachWebview(obj, u);
+      });
+    });
+    obj.viewWrapper.appendChild(c);
+    if (this.activeTabId === obj.id) this.addressBar.value = '';
+  }
+
+  attachFlags(obj) {
+    obj.isCustom = true;
+    obj.webview = null;
+    obj.url = 'chrome://flags';
+    obj.title = 'Flags';
+    obj.tabEl.querySelector('.tab-title').textContent = 'Flags';
+    obj.viewWrapper.innerHTML = '';
+    obj.viewWrapper.appendChild(this.flagsTemplate.content.cloneNode(true));
+    if (this.activeTabId === obj.id) this.addressBar.value = 'chrome://flags';
+  }
+
+  attachExtensions(obj) {
+    obj.isCustom = true;
+    obj.webview = null;
+    obj.url = 'chrome://extensions';
+    obj.title = 'Eklentiler';
+    obj.tabEl.querySelector('.tab-title').textContent = 'Eklentiler';
+    obj.viewWrapper.innerHTML = '';
+    obj.viewWrapper.appendChild(this.extensionsTemplate.content.cloneNode(true));
+    if (this.activeTabId === obj.id) this.addressBar.value = 'chrome://extensions';
+  }
+
+  attachHistory(obj) {
+    obj.isCustom = true;
+    obj.webview = null;
+    obj.url = 'chrome://history';
+    obj.title = 'Tarama Geçmişi';
+    obj.tabEl.querySelector('.tab-title').textContent = 'Tarama Geçmişi';
+    obj.viewWrapper.innerHTML = '';
+
+    const clone = this.historyTemplate.content.cloneNode(true);
+    const list  = clone.querySelector('#history-list');
+    const count = clone.querySelector('#history-count');
+    const clear = clone.querySelector('#clear-history-btn');
+
+    count.textContent = `${this.history.length} kayıt`;
+    clear.addEventListener('click', () => {
+      this.history = [];
+      localStorage.removeItem('2jyymium_history');
+      this.attachHistory(obj);
+    });
+
+    if (!this.history.length) {
+      list.innerHTML = '<p style="color:#9aa0a6;padding:20px 0;">Henüz tarama geçmişi yok.</p>';
+    } else {
+      this.history.forEach((item, i) => {
+        const card = document.createElement('div');
+        card.className = 'card';
+        card.style.animationDelay = (i * 0.03) + 's';
+        card.innerHTML = `
+          <div class="card-info">
+            <div class="card-link">${item.title}</div>
+            <p>${item.url}</p>
+          </div>
+          <span class="card-time">${item.time}</span>
+        `;
+        card.querySelector('.card-link').addEventListener('click', () => {
+          this.attachWebview(obj, item.url);
+        });
+        list.appendChild(card);
+      });
+    }
+
+    obj.viewWrapper.appendChild(clone);
+    if (this.activeTabId === obj.id) this.addressBar.value = 'chrome://history';
+  }
+
+  /* ────────────── SWITCH / CLOSE ────────────── */
+  switchTab(id) {
+    // Animate out current
+    const old = this.tabs.find(t => t.id === this.activeTabId);
+    if (old && old.id !== id && old.viewWrapper.classList.contains('active')) {
+      old.viewWrapper.classList.add('slide-out');
+      old.viewWrapper.addEventListener('animationend', () => {
+        old.viewWrapper.classList.remove('active', 'slide-out');
+      }, { once: true });
+    }
+
+    this.activeTabId = id;
+    this.tabs.forEach(t => {
+      if (t.id === id) {
+        t.tabEl.classList.add('active');
+        t.viewWrapper.classList.add('active');
+        this.addressBar.value = t.isCustom ? (t.url === 'about:blank' ? '' : t.url) : t.url;
+      } else {
+        t.tabEl.classList.remove('active');
+        if (!t.viewWrapper.classList.contains('slide-out')) {
+          t.viewWrapper.classList.remove('active');
+        }
+      }
+    });
+    this.updateNav();
+  }
+
+  closeTab(id) {
+    if (this.tabs.length === 1) this.createTab();
+
+    const index = this.tabs.findIndex(t => t.id === id);
+    if (index === -1) return;
+    const tab = this.tabs[index];
+
+    // Animate tab close
+    tab.tabEl.classList.add('tab-exit');
+    tab.tabEl.addEventListener('animationend', () => tab.tabEl.remove(), { once: true });
+    tab.viewWrapper.remove();
+    this.tabs.splice(index, 1);
+
+    if (this.activeTabId === id) {
+      const next = this.tabs[Math.max(0, index - 1)];
+      if (next) this.switchTab(next.id);
+    }
+  }
+
+  getActive() { return this.tabs.find(t => t.id === this.activeTabId); }
+
+  navigate(url) {
+    if (!url) return;
+    const tab = this.getActive();
+    if (!tab) return;
+    if (url === 'chrome://flags') { this.attachFlags(tab); return; }
+    if (url === 'chrome://history') { this.attachHistory(tab); return; }
+    if (url === 'chrome://extensions') { this.attachExtensions(tab); return; }
+    if (tab.isCustom) this.attachWebview(tab, url);
+    else if (tab.webview) tab.webview.src = url;
+  }
+
+  updateNav() {
+    const tab = this.getActive();
+    document.getElementById('btn-back').disabled    = !(tab?.webview?.canGoBack());
+    document.getElementById('btn-forward').disabled = !(tab?.webview?.canGoForward());
+  }
+
+  /* ────────────── HISTORY ────────────── */
+  pushHistory(title, url) {
+    if (!url || url.startsWith('about:') || url.startsWith('chrome:')) return;
+    if (this.history[0]?.url === url) return;
+    const now = new Date();
+    const timeStr = now.toLocaleDateString('tr-TR') + ' ' + now.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' });
+    this.history.unshift({ title: title || url, url, time: timeStr });
+    if (this.history.length > 500) this.history.pop();
+    localStorage.setItem('2jyymium_history', JSON.stringify(this.history));
+  }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  window.chromiumApp = new ChromiumApp();
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,44 @@
+{
+  "name": "2jyymium",
+  "version": "1.0.0",
+  "description": "2jyymium Browser - Thorium Powered Ultra-Fast Chromium Engine",
+  "main": "index.js",
+  "scripts": {
+    "start": ".\\electron\\electron.exe .",
+    "build": "electron-builder --win",
+    "dist": "electron-builder --win portable"
+  },
+  "keywords": [
+    "browser",
+    "2jyymium",
+    "thorium",
+    "chromium"
+  ],
+  "author": "Antigravity",
+  "license": "ISC",
+  "type": "commonjs",
+  "build": {
+    "appId": "com.antigravity.2jyymium",
+    "productName": "2jyymium",
+    "directories": {
+      "output": "dist"
+    },
+    "win": {
+      "target": [
+        "nsis",
+        "portable"
+      ]
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "2jyymium"
+    }
+  },
+  "devDependencies": {
+    "electron": "^31.0.0",
+    "electron-builder": "^24.13.3"
+  }
+}
