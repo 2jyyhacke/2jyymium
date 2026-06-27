@@ -44,7 +44,7 @@ Projeyi kendi bilgisayarınızda derlemek isterseniz:
 
 1. Depoyu klonlayın:
    ```bash
-   git clone https://github.com/KULLANICI_ADINIZ/2jyymium.git
+   git clone https://github.com/2jyyhacke/2jyymium.git
    cd 2jyymium
    ```
 
@@ -68,5 +68,3 @@ Projeyi kendi bilgisayarınızda derlemek isterseniz:
 
 ## 📄 Lisans
 Bu proje, açık kaynaklı geliştirme standartlarına uygun olarak tasarlanmıştır. Çekirdek Chromium ve Electron lisansları geçerlidir.
-
-*“Geleceğin web deneyimi, karanlıkta daha hızlı.”*
